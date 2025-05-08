@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusTrack - Agendar Viagem</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Estilo geral */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1A477F; /* Azul escuro */
+            color: white;
+        }
+
+        header {
+            background-color: #123456; /* Azul mais escuro */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            position: relative;
+        }
+
+        #botaoVoltar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #FFD700; /* Dourado */
+            color: #123456;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        #botaoVoltar:hover {
+            background-color: #FFC107;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #FFD700; /* Dourado */
+        }
+
+        form {
+            background-color: #ffffff;
+            color: #1A477F;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        form select, form input, form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        form button {
+            background-color: #1A477F;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        form button:hover {
+            background-color: #123456;
+        }
+
+        #googleMap {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            background-color: #123456;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button id="botaoVoltar" onclick="voltarDashboard()">Voltar</button>
+        BusTrack - Agendar Viagem
+    </header>
+    <main>
+        <section id="agendar">
+            <h2>Agendar Nova Viagem</h2>
+            <form id="viagemForm">
+                <label for="localSaida">Local de Saída:</label>
+                <select id="localSaida" required>
+                    <option value="Própria">Própria</option>
+                    <option value="Itabaiana">Itabaiana</option>
+                    <option value="Nossa Senhora da Glória">Nossa Senhora da Glória</option>
+                    <option value="Maruim">Maruim</option>
+                    <option value="Laranjeiras">Laranjeiras</option>
+                    <option value="Ribeirópolis">Ribeirópolis</option>
+                </select>
+
+                <label for="localDestino">Local de Destino:</label>
+                <input type="text" id="localDestino" value="Universidade Tiradentes - Farolândia, Aracaju, SE" readonly>
+
+                <label for="tipoViagem">Tipo de Viagem:</label>
+                <select id="tipoViagem" required>
+                    <option value="ida">Apenas Ida</option>
+                    <option value="volta">Apenas Volta</option>
+                    <option value="idaVolta">Ida e Volta</option>
+                </select>
+
+                <label for="horarioViagem">Horário da Viagem:</label>
+                <select id="horarioViagem" required>
+                    <option value="6-13">Das 6h às 13h</option>
+                    <option value="13-18">Das 13h às 18h</option>
+                    <option value="18-22">Das 18h às 22h</option>
+                </select>
+
+                <label for="dataViagem">Data da Viagem:</label>
+                <input type="date" id="dataViagem" required>
+
+                <label for="nomeAluno">Nome do Aluno:</label>
+                <input type="text" id="nomeAluno" placeholder="Digite seu nome" required>
+
+                <button type="submit">Agendar Viagem</button>
+            </form>
+            <p id="mensagem" style="color: red; text-align: center;"></p>
+        </section>
+
+        <!-- Mapa -->
+        <section id="mapa">
+            <h2>Mapa de Localizações</h2>
+            <div id="googleMap"></div>
+        </section>
+    </main>
+    <footer>
+        &copy; 2025 BusTrack. Todos os direitos reservados.
+    </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const form = document.getElementById('viagemForm');
+        const mensagem = document.getElementById('mensagem');
+        const localSaidaSelect = document.getElementById('localSaida');
+
+        // Função para voltar ao dashboard
+        function voltarDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Coordenadas dos locais
+        const locations = [
+            { lat: -10.212, lng: -36.840, title: "Própria" },
+            { lat: -10.685, lng: -37.427, title: "Itabaiana" },
+            { lat: -10.215, lng: -37.421, title: "Nossa Senhora da Glória" },
+            { lat: -10.734, lng: -37.123, title: "Maruim" },
+            { lat: -10.806, lng: -37.173, title: "Laranjeiras" },
+            { lat: -10.535, lng: -37.438, title: "Ribeirópolis" }
+        ];
+
+        // Coordenadas do destino fixo
+        const destino = { lat: -10.985, lng: -37.056, title: "Universidade Tiradentes - Farolândia, Aracaju, SE" };
+
+        let selectedMarker = null; // Marcador selecionado para o local de saída
+        let routeLine = null; // Linha da rota
+
+        // Inicializar o mapa com Leaflet.js
+        const map = L.map('googleMap').setView([-10.947, -37.073], 7); // Coordenadas iniciais
+
+        // Adicionar o mapa base do OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Adicionar marcadores para os locais de saída
+        locations.forEach(location => {
+            const marker = L.marker([location.lat, location.lng]).addTo(map)
+                .bindPopup(location.title);
+
+            // Evento de clique no marcador
+            marker.on('click', () => {
+                if (selectedMarker) {
+                    selectedMarker.setIcon(L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png' }));
+                }
+                selectedMarker = marker;
+                marker.setIcon(L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png' }));
+                localSaidaSelect.value = location.title; // Atualizar o select com o local clicado
+                drawRoute(location.lat, location.lng); // Traçar a rota
+            });
+        });
+
+        // Adicionar marcador para o destino
+        L.marker([destino.lat, destino.lng]).addTo(map).bindPopup(destino.title);
+
+        // Função para traçar a rota usando a OpenRouteService API
+        async function drawRoute(lat, lng) {
+            // Remover a rota anterior, se existir
+            if (routeLine) {
+                map.removeLayer(routeLine);
+            }
+
+            const apiKey = '5b3ce3597851110001cf6248e4c767e32e1a438d83660f4c96f9785d'; // Sua chave da OpenRouteService
+            const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${lng},${lat}&end=${destino.lng},${destino.lat}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const coordinates = data.features[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                routeLine = L.polyline(coordinates, {
+                    color: 'blue',
+                    weight: 4,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                }).addTo(map);
+
+                // Ajustar o mapa para exibir a rota
+                map.fitBounds(routeLine.getBounds());
+            } catch (error) {
+                console.error('Erro ao traçar a rota:', error);
+                mensagem.textContent = 'Erro ao traçar a rota. Tente novamente.';
+            }
+        }
+
+        // Submeter o formulário
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const nomeAluno = document.getElementById('nomeAluno').value;
+            const localSaida = localSaidaSelect.value;
+            const localDestino = destino.title;
+            const tipoViagem = document.getElementById('tipoViagem').value;
+            const horarioViagem = document.getElementById('horarioViagem').value;
+            const dataViagem = document.getElementById('dataViagem').value;
+
+            // Criar objeto da viagem
+            const viagem = {
+                cidade: localSaida,
+                destino: localDestino,
+                tipo: tipoViagem,
+                horario: horarioViagem,
+                data: dataViagem
+            };
+
+            // Salvar a viagem no localStorage associada ao aluno
+            const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+            const alunoExistente = alunos.find(aluno => aluno.nome === nomeAluno);
+
+            if (alunoExistente) {
+                alunoExistente.viagens = alunoExistente.viagens || [];
+                alunoExistente.viagens.push(viagem);
+            } else {
+                alunos.push({ nome: nomeAluno, viagens: [viagem] });
+            }
+
+            localStorage.setItem('alunos', JSON.stringify(alunos));
+
+            alert('Viagem agendada com sucesso!');
+            form.reset();
+            window.location.href = 'dashboard.html'; // Redirecionar para o dashboard do aluno
+        });
+    </script>
+</body>
+</html>
