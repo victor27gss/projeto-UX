@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusTrack - Dashboard</title>
+    <link rel="stylesheet" href="Untitled-2.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #googleMap {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .bloco {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px;
+            background-color: #f9f9f9;
+            flex: 1;
+            color: black;
+        }
+
+        .bloco h3 {
+            margin-top: 0;
+            color: black;
+        }
+
+        .bloco ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .bloco ul li {
+            margin: 8px 0;
+            cursor: pointer;
+        }
+
+        .bloco ul li:hover {
+            text-decoration: underline;
+        }
+
+        .botao-nova-viagem {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .botao-nova-viagem:hover {
+            background-color: #0056b3;
+        }
+
+        .botao-cancelar {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .botao-cancelar:hover {
+            background-color: #c82333;
+        }
+
+        #dashboard {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        #nomeUsuario {
+            font-size: 1.2em;
+            color: #333;
+            margin-top: -10px;
+        }
+
+        #botaoInicio {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #botaoInicio:hover {
+            background-color: #0056b3;
+        }
+
+        #botaoInicio img {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BusTrack</h1>
+        <p id="nomeUsuario">Bem-vindo, Luiz</p>
+        <button id="botaoInicio" onclick="voltarInicio()">
+            <img src="https://cdn-icons-png.flaticon.com/512/61/61457.png" alt="Ícone de ônibus">
+            Início
+        </button>
+    </header>
+    <main>
+        <section id="dashboard">
+            <div class="bloco" id="informacoesViagem">
+                <h3>Informações da Viagem</h3>
+                <p id="detalhesViagem">Selecione uma viagem para ver os detalhes.</p>
+                <button id="cancelarViagem" class="botao-cancelar" style="display: none;">Cancelar Viagem</button>
+            </div>
+
+            <div class="bloco">
+                <h3>Viagens Agendadas</h3>
+                <ul id="listaViagens"></ul>
+            </div>
+
+            <div class="bloco">
+                <h3>Cadastrar Nova Viagem</h3>
+                <a href="agendar.html" class="botao-nova-viagem">Cadastrar Nova Viagem</a>
+            </div>
+        </section>
+
+        <section id="mapa">
+            <h2>Mapa da Rota</h2>
+            <div id="googleMap"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 BusTrack. Todos os direitos reservados.</p>
+    </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const listaViagens = document.getElementById('listaViagens');
+        const detalhesViagem = document.getElementById('detalhesViagem');
+        const nomeUsuarioElement = document.getElementById('nomeUsuario');
+        const cancelarViagemButton = document.getElementById('cancelarViagem');
+
+        // Recupera o usuário logado do localStorage
+        const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado')) || { nome: "Usuário" };
+        nomeUsuarioElement.textContent = `Bem-vindo, ${usuarioLogado.nome}`;
+
+        // Função para voltar à página inicial
+        function voltarInicio() {
+            window.location.href = "index.html.html"; // Redireciona para o arquivo index.html.html
+        }
+
+        const destino = { lat: -10.985, lng: -37.056, title: "Universidade Tiradentes - Farolândia, Aracaju, SE" };
+
+        let routeLine = null;
+        let viagemSelecionada = null;
+
+        const map = L.map('googleMap').setView([-10.947, -37.073], 7);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        L.marker([destino.lat, destino.lng]).addTo(map).bindPopup(destino.title);
+
+        const locations = {
+            "Própria": { lat: -10.212, lng: -36.840 },
+            "Itabaiana": { lat: -10.685, lng: -37.427 },
+            "Nossa Senhora da Glória": { lat: -10.215, lng: -37.421 },
+            "Maruim": { lat: -10.734, lng: -37.123 },
+            "Laranjeiras": { lat: -10.806, lng: -37.173 },
+            "Ribeirópolis": { lat: -10.535, lng: -37.438 }
+        };
+
+        // Função para carregar as viagens do usuário logado
+        function carregarViagens() {
+            const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+            const alunoLogado = alunos.find(aluno => aluno.nome === usuarioLogado.nome);
+
+            if (!alunoLogado || !alunoLogado.viagens) {
+                listaViagens.innerHTML = '<p>Nenhuma viagem agendada.</p>';
+                return;
+            }
+
+            listaViagens.innerHTML = '';
+            alunoLogado.viagens.forEach((viagem, index) => {
+                const li = document.createElement('li');
+                li.textContent = `Saída: ${viagem.cidade}, Data: ${viagem.data}, Horário: ${viagem.horario}`;
+                li.style.cursor = 'pointer';
+                li.addEventListener('click', () => {
+                    viagemSelecionada = { ...viagem, index };
+                    mostrarRota(viagem.cidade);
+                    detalhesViagem.innerHTML = `
+                        <strong>Nome:</strong> ${alunoLogado.nome}<br>
+                        <strong>Saída:</strong> ${viagem.cidade}<br>
+                        <strong>Destino:</strong> ${destino.title}<br>
+                        <strong>Data:</strong> ${viagem.data}<br>
+                        <strong>Horário:</strong> ${viagem.horario}<br>
+                        <strong>Tipo:</strong> ${viagem.tipo}
+                    `;
+                    cancelarViagemButton.style.display = 'block';
+                });
+                listaViagens.appendChild(li);
+            });
+        }
+
+        // Função para mostrar a rota no mapa
+        async function mostrarRota(localSaida) {
+            if (routeLine) {
+                map.removeLayer(routeLine);
+            }
+
+            const saida = locations[localSaida];
+            if (!saida) {
+                alert('Local de saída inválido!');
+                return;
+            }
+
+            const apiKey = '5b3ce3597851110001cf6248e4c767e32e1a438d83660f4c96f9785d';
+            const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${saida.lng},${saida.lat}&end=${destino.lng},${destino.lat}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const coordinates = data.features[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                routeLine = L.polyline(coordinates, {
+                    color: 'blue',
+                    weight: 4,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                }).addTo(map);
+
+                map.fitBounds(routeLine.getBounds());
+            } catch (error) {
+                console.error('Erro ao traçar a rota:', error);
+                alert('Erro ao traçar a rota. Tente novamente.');
+            }
+        }
+
+        // Função para cancelar a viagem selecionada
+        cancelarViagemButton.addEventListener('click', () => {
+            const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+            const alunoLogado = alunos.find(aluno => aluno.nome === usuarioLogado.nome);
+
+            if (alunoLogado && viagemSelecionada !== null) {
+                alunoLogado.viagens.splice(viagemSelecionada.index, 1);
+                localStorage.setItem('alunos', JSON.stringify(alunos));
+                carregarViagens();
+                detalhesViagem.textContent = 'Selecione uma viagem para ver os detalhes.';
+                cancelarViagemButton.style.display = 'none';
+                alert('Viagem cancelada com sucesso!');
+            }
+        });
+
+        // Carregar as viagens ao iniciar
+        carregarViagens();
+    </script>
+</body>
+</html>
