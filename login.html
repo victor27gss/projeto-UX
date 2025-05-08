@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusTrack - Login</title>
+    <link rel="stylesheet" href="Untitled-2.css">
+    <style>
+        /* Estilo geral */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1A477F; /* Azul escuro */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #login {
+            background-color: white;
+            color: #1A477F;
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        #login h2 {
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        #login p {
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #1A477F;
+        }
+
+        .user-type {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .user-type button {
+            flex: 1;
+            padding: 10px;
+            margin: 0 5px;
+            border: 1px solid #1A477F;
+            border-radius: 5px;
+            background-color: #f4f4f9;
+            color: #1A477F;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .user-type button.active {
+            background-color: #1A477F;
+            color: white;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            text-align: left;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #1A477F;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: #f4f4f9;
+            color: #1A477F;
+        }
+
+        button[type="submit"] {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1A477F;
+            color: white;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #1E5399;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        footer p {
+            color: black;
+        }
+
+        footer a {
+            color: black;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section id="login">
+            <h2>Entrar no BusTrack</h2>
+            <p>Acesse sua conta para gerenciar suas viagens</p>
+            <div class="user-type">
+                <button id="estudanteBtn" class="active">Estudante</button>
+                <button id="motoristaBtn">Motorista</button>
+            </div>
+            <form id="loginForm">
+                <label for="email">Email:</label>
+                <input type="email" id="email" placeholder="seu@email.com" required>
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" placeholder="Digite sua senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <footer>
+                <p><span style="color: black;">Não tem uma conta?</span> <a href="cadastro.html">Cadastre-se</a></p>
+            </footer>
+        </section>
+    </main>
+    <script>
+        const estudanteBtn = document.getElementById('estudanteBtn');
+        const motoristaBtn = document.getElementById('motoristaBtn');
+        const loginForm = document.getElementById('loginForm');
+
+        let tipoUsuario = 'estudante'; // Tipo de usuário padrão é estudante
+
+        // Alternar entre estudante e motorista
+        estudanteBtn.addEventListener('click', () => {
+            tipoUsuario = 'estudante';
+            estudanteBtn.classList.add('active');
+            motoristaBtn.classList.remove('active');
+        });
+
+        motoristaBtn.addEventListener('click', () => {
+            tipoUsuario = 'motorista';
+            motoristaBtn.classList.add('active');
+            estudanteBtn.classList.remove('active');
+        });
+
+        // Evento de submissão do formulário de login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Previne o comportamento padrão do formulário
+
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            // Obter os usuários do localStorage com base no tipo de usuário selecionado
+            const usuarios = JSON.parse(localStorage.getItem(tipoUsuario === 'estudante' ? 'alunos' : 'motoristas')) || [];
+            const usuario = usuarios.find(u => u.email === email && u.senha === senha);
+
+            if (usuario) {
+                // Salvar o usuário logado no localStorage
+                localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+
+                // Redirecionar para o dashboard correspondente
+                window.location.href = tipoUsuario === 'estudante' ? 'dashboard.html' : 'dashboard_motorista.html';
+            } else {
+                alert('Usuário ou senha inválidos!');
+            }
+        });
+    </script>
+</body>
+</html>
