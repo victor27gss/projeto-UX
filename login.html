@@ -119,9 +119,30 @@
         footer a:hover {
             text-decoration: underline;
         }
+
+        /* Botão de voltar ao início no canto superior direito */
+        .inicio-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1A477F;
+            color: white;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .inicio-btn:hover {
+            background-color: #1E5399;
+        }
     </style>
 </head>
 <body>
+    <!-- Botão para voltar ao início -->
+    <button class="inicio-btn" onclick="window.location.href='index.html.html'">Início</button>
     <main>
         <section id="login">
             <h2>Entrar no BusTrack</h2>
