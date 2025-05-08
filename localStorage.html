@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Ponto de Partida</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #1A477F;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1E5399;
+        }
+
+        ul {
+            margin-top: 20px;
+            padding: 0;
+            list-style: none;
+        }
+
+        ul li {
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+        }
+
+        ul li span {
+            margin-right: 10px;
+        }
+
+        ul li button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        ul li button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastro de Ponto de Partida</h1>
+    <form id="form">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" placeholder="Digite o nome" required>
+
+        <label for="cidade">Ponto de Partida:</label>
+        <select id="cidade" required>
+            <option value="Própria">Própria</option>
+            <option value="Nossa Senhora da Glória">Nossa Senhora da Glória</option>
+            <option value="Itabaiana">Itabaiana</option>
+            <option value="Maruim">Maruim</option>
+            <option value="Laranjeiras">Laranjeiras</option>
+            <option value="Ribeirópolis">Ribeirópolis</option>
+        </select>
+
+        <label for="horario">Horário:</label>
+        <input type="text" id="horario" placeholder="Digite o horário" required>
+
+        <label for="tipo">Tipo de Viagem:</label>
+        <select id="tipo" required>
+            <option value="Ida">Ida</option>
+            <option value="Volta">Volta</option>
+            <option value="Ida e Volta">Ida e Volta</option>
+        </select>
+
+        <button type="submit">Salvar no LocalStorage</button>
+    </form>
+
+    <h2>Dados Cadastrados</h2>
+    <ul id="listaAlunos"></ul>
+
+    <script>
+        const form = document.getElementById('form');
+        const listaAlunos = document.getElementById('listaAlunos');
+
+        // Função para salvar dados no localStorage
+        function salvarDados(chave, valor) {
+            localStorage.setItem(chave, JSON.stringify(valor));
+        }
+
+        // Função para obter dados do localStorage
+        function obterDados(chave) {
+            return JSON.parse(localStorage.getItem(chave)) || [];
+        }
+
+        // Função para exibir os dados cadastrados
+        function exibirDados() {
+            const dados = obterDados('alunos');
+            listaAlunos.innerHTML = ''; // Limpa a lista antes de exibir os dados
+
+            dados.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span><strong>Nome:</strong> ${item.nome}</span>
+                    <span><strong>Ponto de Partida:</strong> ${item.cidade}</span>
+                    <span><strong>Horário:</strong> ${item.horario}</span>
+                    <span><strong>Tipo:</strong> ${item.tipo}</span>
+                    <button onclick="removerDado(${index})">Remover</button>
+                `;
+                listaAlunos.appendChild(li); // Adiciona o item à lista
+            });
+        }
+
+        // Função para remover um dado do localStorage
+        function removerDado(index) {
+            const dados = obterDados('alunos');
+            dados.splice(index, 1); // Remove o item pelo índice
+            salvarDados('alunos', dados); // Atualiza o localStorage
+            exibirDados(); // Atualiza a lista exibida
+        }
+
+        // Evento de submissão do formulário
+        form.addEventListener('submit', (e) => {
+            e.preventDefault(); // Previne o comportamento padrão do formulário
+
+            // Obtém os valores dos campos do formulário
+            const nome = document.getElementById('nome').value;
+            const cidade = document.getElementById('cidade').value;
+            const horario = document.getElementById('horario').value;
+            const tipo = document.getElementById('tipo').value;
+
+            // Cria um novo objeto com os dados do formulário
+            const novoDado = { nome, cidade, horario, tipo };
+
+            // Adiciona o novo dado ao localStorage
+            const dados = obterDados('alunos');
+            dados.push(novoDado);
+            salvarDados('alunos', dados);
+
+            form.reset(); // Limpa o formulário
+            exibirDados(); // Atualiza a lista exibida
+        });
+
+        // Exibe os dados ao carregar a página
+        exibirDados();
+    </script>
+</body>
+</html>
