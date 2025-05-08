@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusTrack - Início</title>
+    <link rel="stylesheet" href="Untitled-2.css">
+</head>
+<body>
+    <header>
+        <h1>BusTrack</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Início</a></li>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="cadastro.html">Cadastro</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section id="inicio">
+            <h2>Conectando estudantes e motoristas com facilidade</h2>
+            <p>Agende suas viagens para a universidade com motoristas confiáveis. BusTrack simplifica sua rotina acadêmica.</p>
+            <button onclick="location.href='login.html'">Fazer Login</button>
+            <button onclick="location.href='cadastro.html'">Cadastre-se</button>
+        </section>
+        <section id="mapa">
+            <h2>Mapa de Rotas</h2>
+            <div id="googleMap" class="map"></div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 BusTrack. Todos os direitos reservados.</p>
+    </footer>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <script src="Untitled-3.js"></script>
+</body>
+</html>
